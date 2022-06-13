@@ -25,7 +25,8 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Datatype
+      Minesweeper
   other-modules:
       Paths_stego_minesweeper
   hs-source-dirs:
