@@ -6,8 +6,17 @@ module Datatype where
 -- 3. Flagged or marked state - player cannot open the cell, but can unmark it or change mark.
 data CellState = Flagged | Marked | Closed | Opened
 
+-- | Safe number of neighbor bombs.
+type NeighborsCount = Maybe Int
+
+-- | Convert an integer to the count of neighbor bombs.
+intToNeighborsCount :: Int -> NeighborsCount
+intToNeighborsCount number
+  | 0 < number && number < 9 = Just number
+  | otherwise = Nothing
+
 -- | Cell content: bomb or the number of neighbor bombs (if any).
-data CellContent = Bomb | Maybe Int
+data CellContent = Bomb | NeighborsCount
 
 -- | Cell can be opened or closed, has some content and may have a mark.
 data Cell = Cell CellContent CellState
