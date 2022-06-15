@@ -3,11 +3,31 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: miso-1.8.2.0@sha256:71d7df16996fb21e55d478d0c36aa71876e3fcaea08f3e127e7506930c9e6610,3821
+    pantry-tree:
+      size: 3130
+      sha256: eac31df3fe19833e28e24dc8d721d5a02eedd7f0c8c221bc827eb79ebe175f17
+  original:
+    hackage: miso-1.8.2.0@sha256:71d7df16996fb21e55d478d0c36aa71876e3fcaea08f3e127e7506930c9e6610,3821
+- completed:
+    hackage: jsaddle-0.9.8.2@sha256:e8c003801eb9364fcd6b1e0cda34f072a537bcfa767e6eb8c626836dae77ba04,4419
+    pantry-tree:
+      size: 4329
+      sha256: 496419613896d8177b37185a912dad72e9033875a03315554d9de52b66d6ccc1
+  original:
+    hackage: jsaddle-0.9.8.2@sha256:e8c003801eb9364fcd6b1e0cda34f072a537bcfa767e6eb8c626836dae77ba04,4419
+- completed:
+    hackage: ref-tf-0.4.0.2@sha256:69de3550250e0cd69f45d080359cb314a9487c915024349c75b78732bbee9332,1134
+    pantry-tree:
+      size: 211
+      sha256: fc5a4a35b4c782a33f452c1dc66ffa8ddbf321e2db369bd8823c796f0d4d8c7f
+  original:
+    hackage: ref-tf-0.4.0.2@sha256:69de3550250e0cd69f45d080359cb314a9487c915024349c75b78732bbee9332,1134
 snapshots:
 - completed:
-    size: 619152
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/11.yaml
-    sha256: 692668712aa3a6638401ce921cd043f5f9a8b018af9ba13ae350871196b047d6
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/11.yaml
+    size: 534126
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/31.yaml
+    sha256: 637fb77049b25560622a224845b7acfe81a09fdb6a96a3c75997a10b651667f6
+  original: lts-16.31
