@@ -44,8 +44,8 @@ shadowColor = intRGB 127 127 129
 glareColor :: Color
 glareColor = white
 
-drawBoard :: Board -> Picture
-drawBoard board = pictures (map drawCell (concat (enumerateBoard board)))
+drawBoard :: Game -> Picture
+drawBoard (state, board) = pictures (map drawCell (concat (enumerateBoard board)))
 
 drawButton :: (Double, Double) -> Bool -> Picture
 drawButton (width, height) isConvex =

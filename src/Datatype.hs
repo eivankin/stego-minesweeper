@@ -18,7 +18,7 @@ intToNeighborsCount number
   | otherwise = Nothing
 
 -- | Cell content: bomb or the number of neighbor bombs (if any).
-data CellContent = Bomb | Neighbors NeighborsCount 
+data CellContent = Bomb | Neighbors NeighborsCount
 
 -- | Cell can be opened or closed, has some content and may have a mark.
 data Cell = Cell CellContent CellState
@@ -27,7 +27,7 @@ data Cell = Cell CellContent CellState
 -- 1. Initial state ('Start') - timer is stopped, board is not initialized, player can make first turn.
 -- 2. Process state ('InProcess') - timer is running, player can make turns.
 -- 3. End state ('Win' or 'Lose') - timer is stopped, player cannot make turns.
-data GameState = Start | InProcess | Win | Lose
+data GameState = Start | InProcess | Win | Lose deriving (Eq)
 
 -- | Board is a 2D array of cells.
 type Board = [[Cell]]

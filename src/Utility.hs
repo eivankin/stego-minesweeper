@@ -3,9 +3,10 @@ module Utility where
 import Datatype
 import CodeWorld.Reflex (Point)
 import Constants (cellSize)
+import Data.Maybe (listToMaybe)
 
 -- | Add coordinates to board cells.
-enumerateBoard :: Board -> [[(Coords, Cell)]]
+enumerateBoard :: [[a]] -> [[(Coords, a)]]
 enumerateBoard = zipWith enumerateRow [0 ..]
   where
     enumerateRow index row = zipWith (packCell index) [0 ..] row
@@ -27,3 +28,6 @@ updateAt index f list = first ++ secondPart
 -- | Convert mouse position into board coordinates.
 pointToCoords :: Point -> (Int, Int)
 pointToCoords (x, y) = (round (x / cellSize), round (y / cellSize))
+
+safeGetAt :: Int -> [a] -> Maybe a
+safeGetAt index list = listToMaybe (take 1 (drop index list))
