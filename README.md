@@ -1,4 +1,16 @@
-# stego-minesweeper
+# Usage
+
+## Building
+```shell
+stack build
+```
+
+## Running
+```shell
+stack run
+```
+
+# Description
 ## Project scope
 This project is based on [1], where researchers describe the usage of the “Minesweeper” game as the steganography tool. 
 Our team will focus on the game itself and on the proposed way of encoding messages as the grid of mines.

@@ -1,5 +1,7 @@
 module Datatype where
 
+type Coords = (Int, Int)
+
 -- | Cell has 3 states:
 -- 1. Opened state - player the cell content.
 -- 2. Closed state - player can open the cell.
@@ -16,7 +18,7 @@ intToNeighborsCount number
   | otherwise = Nothing
 
 -- | Cell content: bomb or the number of neighbor bombs (if any).
-data CellContent = Bomb | NeighborsCount
+data CellContent = Bomb | Neighbors NeighborsCount 
 
 -- | Cell can be opened or closed, has some content and may have a mark.
 data Cell = Cell CellContent CellState
