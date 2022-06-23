@@ -51,15 +51,20 @@ drawBoard :: Game -> Picture
 drawBoard (_, state, board) = pictures (map (drawCell state) (concat (enumerateBoard board)))
 
 drawButton :: (Double, Double) -> Bool -> Picture
-drawButton (width, height) isConvex =
+drawButton (buttonWidth, buttonHeight) isConvex =
   colored
     baseColor
-    (solidSquare (width - cellPadding * 2))
+    (solidRectangle (buttonWidth - cellPadding * 2) (buttonHeight - cellPadding * 2))
     <> pictures (zipWith drawColoredPolygon [shadowColor, glareColor] [True, False])
   where
-    vertices = [(0, height), (height / 2, height / 2), (width - height / 2, height / 2), (width, 0)]
+    vertices =
+      [ (0, buttonHeight),
+        (buttonHeight / 2, buttonHeight / 2),
+        (buttonWidth - buttonHeight / 2, buttonHeight / 2),
+        (buttonWidth, 0)
+      ]
     getCornerCoords isShadow
-      | isConvex == isShadow = (width, height)
+      | isConvex == isShadow = (buttonWidth, buttonHeight)
       | otherwise = (0, 0)
     getCoords isShadow = getCornerCoords isShadow : vertices
     drawColoredPolygon color isShadow =
@@ -103,20 +108,20 @@ drawCell gameState (coords, Cell content state) =
     drawBombOnLose True _ = moved (drawCellContent Bomb Opened <> drawCellBackground Opened red)
     drawBombOnLose False Closed = moved (drawCellContent Bomb Opened <> drawCellBackground Opened baseColor)
     drawBombOnLose _ _ = defaultDraw
-    
+
     defaultDraw =
       moved
         ( drawCellContent content state
             <> drawCellBackground state baseColor
         )
-    
+
     moved =
       translated
         (x * cellSize)
         (y * cellSize)
-    
+
     drawCellOnWin =
-      case content of 
+      case content of
         Bomb -> moved (drawCellContent Bomb Flagged <> drawCellBackground Flagged baseColor)
         _ -> defaultDraw
 

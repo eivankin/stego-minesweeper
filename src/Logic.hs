@@ -29,14 +29,13 @@ checkWin (mode, state, board)
 openCellWithNeighbors :: Coords -> Game -> Game
 openCellWithNeighbors (x, y) game@(mode, state, board)
   | state /= InProcess = game
-  | x >= 0 && x < length firstRow && y >= 0 && y < length board =
+  | x >= 0 && x < width board && y >= 0 && y < height board =
     case getCell (x, y) board of
       Just (Cell (Neighbors Nothing) Closed) -> (mode, InProcess, neighbors board)
       Just (Cell Bomb Closed) -> (mode, Lose (x, y), openCell (x, y) board)
       _ -> (mode, InProcess, openCell (x, y) board)
   | otherwise = game
   where
-    firstRow = fromMaybe [] (listToMaybe (take 1 board))
     neighbors = foldNeighbors (openCell (x, y)) openNeighbors (x, y)
     openNeighbors coords gameBoard = third $ openCellWithNeighbors coords (mode, InProcess, gameBoard)
     third (_, _, v) = v

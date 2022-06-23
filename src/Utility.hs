@@ -3,7 +3,7 @@ module Utility where
 import Datatype
 import CodeWorld.Reflex (Point)
 import Constants (cellSize)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, fromMaybe)
 
 -- | Add coordinates to board cells.
 enumerateBoard :: [[a]] -> [[(Coords, a)]]
@@ -31,3 +31,17 @@ pointToCoords (x, y) = (round (x / cellSize), round (y / cellSize))
 
 safeGetAt :: Int -> [a] -> Maybe a
 safeGetAt index list = listToMaybe (take 1 (drop index list))
+
+width :: Board -> Int 
+width board = length firstRow
+  where
+    firstRow = fromMaybe [] (listToMaybe (take 1 board))
+
+height :: Board -> Int
+height = length
+
+getShift :: Board -> Point
+getShift board = (-fromIntegral (width board) / 2, -fromIntegral (height board) / 2)
+
+shiftPoint :: Point -> Point -> Point
+shiftPoint (x, y) (dx, dy) = (x - dx, y - dy)
