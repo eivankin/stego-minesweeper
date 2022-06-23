@@ -4,10 +4,10 @@
 module Rendering where
 
 import CodeWorld
+import Constants
 import Data.Text (Text, pack)
 import Datatype
 import Utility
-import Constants
 
 intRGB :: Int -> Int -> Int -> Color
 intRGB r g b = RGB (fromIntegral r / 255) (fromIntegral g / 255) (fromIntegral b / 255)
@@ -35,6 +35,9 @@ questionMark = "\x2753"
 bombMark :: Text
 bombMark = "\x1F4A3"
 
+crossMark :: Text
+crossMark = "\x274C"
+
 baseColor :: Color
 baseColor = intRGB 191 191 191
 
@@ -45,7 +48,7 @@ glareColor :: Color
 glareColor = white
 
 drawBoard :: Game -> Picture
-drawBoard (state, board) = pictures (map drawCell (concat (enumerateBoard board)))
+drawBoard (_, state, board) = pictures (map (drawCell state) (concat (enumerateBoard board)))
 
 drawButton :: (Double, Double) -> Bool -> Picture
 drawButton (width, height) isConvex =
@@ -65,11 +68,11 @@ drawButton (width, height) isConvex =
         (- cellSize / 2)
         (colored color (solidPolygon (getCoords isShadow)))
 
-drawCellBackground :: CellState -> Picture
-drawCellBackground Opened =
-  colored baseColor (solidSquare (cellSize - cellPadding))
+drawCellBackground :: CellState -> Color -> Picture
+drawCellBackground Opened color =
+  colored color (solidSquare (cellSize - cellPadding))
     <> colored shadowColor (solidSquare cellSize)
-drawCellBackground _ = drawButton (cellSize, cellSize) True
+drawCellBackground _ _ = drawButton (cellSize, cellSize) True
 
 drawCellContent :: CellContent -> CellState -> Picture
 drawCellContent _ Flagged = drawLettering flagMark
@@ -83,16 +86,32 @@ drawLettering text = translated 0 (- cellPadding / 2) (scaled scaleFactor scaleF
   where
     scaleFactor = 1 / cellSize * ((cellSize - cellPadding * 3) / cellSize)
 
-drawCell :: (Coords, Cell) -> Picture
-drawCell (coords, Cell content state) =
-  translated
-    (x * cellSize)
-    (y * cellSize)
-    ( drawCellContent content state
-        <> drawCellBackground state
-    )
+drawCell :: GameState -> (Coords, Cell) -> Picture
+drawCell gameState (coords, Cell content state) =
+  case gameState of
+    (Lose lastMove) ->
+      case (content, state) of
+        (Bomb, _) -> drawBombOnLose (lastMove == coords) state
+        (_, Flagged) -> drawIncorrectGuess
+        (_, Marked) -> drawIncorrectGuess
+        _ -> defaultDraw
+    _ -> defaultDraw
   where
     (x, y) = fromCoords coords
+    drawIncorrectGuess = moved (drawLettering crossMark <> drawCellContent Bomb Opened <> drawCellBackground Opened baseColor)
+    drawBombOnLose True _ = moved (drawCellContent Bomb Opened <> drawCellBackground Opened red)
+    drawBombOnLose False Closed = moved (drawCellContent Bomb Opened <> drawCellBackground Opened baseColor)
+    drawBombOnLose _ _ = defaultDraw
+    
+    defaultDraw =
+      moved
+        ( drawCellContent content state
+            <> drawCellBackground state baseColor
+        )
+    moved =
+      translated
+        (x * cellSize)
+        (y * cellSize)
 
 drawShifted :: Coords -> (a -> Picture) -> a -> Picture
 drawShifted coords drawFunction arguments = translated shiftX shiftY (drawFunction arguments)

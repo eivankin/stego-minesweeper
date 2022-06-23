@@ -27,10 +27,13 @@ data Cell = Cell CellContent CellState
 -- 1. Initial state ('Start') - timer is stopped, board is not initialized, player can make first turn.
 -- 2. Process state ('InProcess') - timer is running, player can make turns.
 -- 3. End state ('Win' or 'Lose') - timer is stopped, player cannot make turns.
-data GameState = Start | InProcess | Win | Lose deriving (Eq)
+-- 'Lose' state also stores coordinates of the last player's move.
+data GameState = Start | InProcess | Win | Lose Coords deriving (Eq)
+
+data ClickMode = OpenCell | MarkCell
 
 -- | Board is a 2D array of cells.
 type Board = [[Cell]]
 
 -- | Alias for tuple of game state and board.
-type Game = (GameState, Board)
+type Game = (ClickMode, GameState, Board)

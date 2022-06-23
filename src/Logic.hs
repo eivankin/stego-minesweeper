@@ -1,39 +1,36 @@
-module Logic (openCellWithNeighbors, minesToBoard, disarmBomb) where
+module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell) where
 
 import Data.Maybe
 import Datatype
 import Utility
 
 openCell :: Coords -> Board -> Board
-openCell (x, y) = updateAt y (updateAt x processCell)
+openCell = updateCell open
   where
-    processCell (Cell content Closed) = Cell content Opened
-    processCell cell = cell
+    open (Cell content Closed) = Cell content Opened
+    open cell = cell
 
+getCell :: Coords -> Board -> Maybe Cell
+getCell (x, y) board = safeGetAt x (fromMaybe [] (safeGetAt y board))
+
+updateCell :: (Cell -> Cell) -> Coords -> Board -> Board
+updateCell updater (x, y) = updateAt y (updateAt x updater)
+
+-- TODO: check win
 openCellWithNeighbors :: Coords -> Game -> Game
-openCellWithNeighbors (x, y) game@(state, board)
+openCellWithNeighbors (x, y) game@(mode, state, board)
   | state /= InProcess = game
   | x >= 0 && x < length firstRow && y >= 0 && y < length board =
-    case safeGetAt x (fromMaybe [] (safeGetAt y board)) of
-      Just (Cell (Neighbors Nothing) Closed) -> (InProcess, neighbors board)
-      Just (Cell Bomb Closed) -> (Lose, openCell (x, y) board)
-      _ -> (InProcess, openCell (x, y) board)
+    case getCell (x, y) board of
+      Just (Cell (Neighbors Nothing) Closed) -> (mode, InProcess, neighbors board)
+      Just (Cell Bomb Closed) -> (mode, Lose (x, y), openCell (x, y) board)
+      _ -> (mode, InProcess, openCell (x, y) board)
   | otherwise = game
   where
     firstRow = fromMaybe [] (listToMaybe (take 1 board))
-    neighbors =
-      foldr
-        (.)
-        (openCell (x, y))
-        ( concatMap
-            ( \posY ->
-                map
-                  (\posX -> openNeighbors (posX, posY))
-                  [x - 1 .. x + 1]
-            )
-            [y - 1 .. y + 1]
-        )
-    openNeighbors coords gameBoard = snd $ openCellWithNeighbors coords (InProcess, gameBoard)
+    neighbors = foldNeighbors (openCell (x, y)) openNeighbors (x, y)
+    openNeighbors coords gameBoard = third $ openCellWithNeighbors coords (mode, InProcess, gameBoard)
+    third (_, _, v) = v
 
 minesToBoard :: [[Bool]] -> Board
 minesToBoard board = map (map boolToCell) (enumerateBoard board)
@@ -45,12 +42,22 @@ minesToBoard board = map (map boolToCell) (enumerateBoard board)
     getNeighbors coords = getNeighborsAt coords False board
 
 disarmBomb :: Coords -> Board -> Board
-disarmBomb (x, y) board = updateAt y (updateAt x processCell) board
+disarmBomb (x, y) = foldNeighbors (updateCell processCell (x, y)) updateCount (x, y)
   where
-    processCell (Cell Bomb Closed) = Cell (Neighbors (countNeighbors (x, y))) Closed
+    processCell (Cell Bomb Closed) = Cell (Neighbors Nothing) Closed
     processCell cell = cell
-    countNeighbors coords = intToNeighborsCount (length (filter isBomb (getNeighbors coords)))
-    getNeighbors coords = getNeighborsAt coords (Cell (Neighbors Nothing) Closed) board
+
+    updateCount coords currentBoard =
+      case getCell coords currentBoard of
+        Just (Cell (Neighbors _) state) ->
+          updateCell
+            (const (Cell (Neighbors (countNeighbors coords currentBoard)) state))
+            coords
+            currentBoard
+        _ -> currentBoard
+
+    countNeighbors coords currentBoard = intToNeighborsCount (length (filter isBomb (getNeighbors coords currentBoard)))
+    getNeighbors coords currentBoard = getNeighborsAt coords (Cell (Neighbors Nothing) Closed) currentBoard
 
     isBomb (Cell Bomb _) = True
     isBomb _ = False
@@ -61,6 +68,28 @@ getNeighborsAt (x, y) defaultValue board =
     ( \posY ->
         map
           (\posX -> fromMaybe defaultValue (safeGetAt posX (fromMaybe [] (safeGetAt posY board))))
-          [x - 1 .. x + 1]
+          [max (x - 1) 0 .. x + 1]
     )
-    [y - 1 .. y + 1]
+    [max (y - 1) 0 .. y + 1]
+
+markCell :: Coords -> Board -> Board
+markCell (x, y) = updateAt y (updateAt x processCell)
+  where
+    processCell (Cell content Closed) = Cell content Flagged
+    processCell (Cell content Flagged) = Cell content Marked
+    processCell (Cell content Marked) = Cell content Closed
+    processCell cell = cell
+
+foldNeighbors :: (Num a1, Num a2, Enum a1, Enum a2) => (a3 -> b) -> ((a1, a2) -> b -> b) -> (a1, a2) -> a3 -> b
+foldNeighbors startFunc stepFunc (x, y) =
+  foldr
+    (.)
+    startFunc
+    ( concatMap
+        ( \posY ->
+            map
+              (\posX -> stepFunc (posX, posY))
+              [x - 1 .. x + 1]
+        )
+        [y - 1 .. y + 1]
+    )
