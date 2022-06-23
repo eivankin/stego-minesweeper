@@ -1,4 +1,4 @@
-module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell) where
+module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell, checkWin) where
 
 import Data.Maybe
 import Datatype
@@ -16,7 +16,16 @@ getCell (x, y) board = safeGetAt x (fromMaybe [] (safeGetAt y board))
 updateCell :: (Cell -> Cell) -> Coords -> Board -> Board
 updateCell updater (x, y) = updateAt y (updateAt x updater)
 
--- TODO: check win
+
+checkWin :: Game -> Game
+checkWin (mode, state, board) 
+  | and (concatMap (map isBombOrOpen) board) = (mode, Win, board)
+  | otherwise = (mode, state, board)
+  where
+    isBombOrOpen (Cell Bomb _) = True
+    isBombOrOpen (Cell _ Opened) = True
+    isBombOrOpen _ = False 
+
 openCellWithNeighbors :: Coords -> Game -> Game
 openCellWithNeighbors (x, y) game@(mode, state, board)
   | state /= InProcess = game

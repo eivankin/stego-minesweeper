@@ -95,6 +95,7 @@ drawCell gameState (coords, Cell content state) =
         (_, Flagged) -> drawIncorrectGuess
         (_, Marked) -> drawIncorrectGuess
         _ -> defaultDraw
+    Win -> drawCellOnWin
     _ -> defaultDraw
   where
     (x, y) = fromCoords coords
@@ -108,10 +109,16 @@ drawCell gameState (coords, Cell content state) =
         ( drawCellContent content state
             <> drawCellBackground state baseColor
         )
+    
     moved =
       translated
         (x * cellSize)
         (y * cellSize)
+    
+    drawCellOnWin =
+      case content of 
+        Bomb -> moved (drawCellContent Bomb Flagged <> drawCellBackground Flagged baseColor)
+        _ -> defaultDraw
 
 drawShifted :: Coords -> (a -> Picture) -> a -> Picture
 drawShifted coords drawFunction arguments = translated shiftX shiftY (drawFunction arguments)

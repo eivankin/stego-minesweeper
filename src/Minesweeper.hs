@@ -23,8 +23,8 @@ createBoard density stdGen = minesToBoard (map makeRow (take boardHeight (random
 -- | Handle mouse clicks to put marks.
 handleGame :: Event -> Game -> Game
 handleGame (PointerPress mouse) (OpenCell, Start, board) =
-  openCellWithNeighbors (pointToCoords mouse) (OpenCell, InProcess, disarmBomb (pointToCoords mouse) board)
-handleGame (PointerPress mouse) game@(OpenCell, InProcess, _) = openCellWithNeighbors (pointToCoords mouse) game
+  checkWin (openCellWithNeighbors (pointToCoords mouse) (OpenCell, InProcess, disarmBomb (pointToCoords mouse) board))
+handleGame (PointerPress mouse) game@(OpenCell, InProcess, _) = checkWin (openCellWithNeighbors (pointToCoords mouse) game)
 handleGame (KeyPress "Ctrl") (_, state, board) = (MarkCell, state, board)
 handleGame (KeyRelease "Ctrl") (_, state, board) = (OpenCell, state, board)
 handleGame (PointerPress mouse) game@(MarkCell, state, board) = 
@@ -37,5 +37,5 @@ handleGame _ game = game
 run :: IO ()
 run = do
   stdGen <- getStdGen
-  let board = createBoard 0.2 stdGen
+  let board = createBoard 0.1 stdGen
   activityOf (OpenCell, Start, board) handleGame drawBoard
