@@ -154,3 +154,6 @@ drawCell gameState (coords, Cell content state) =
 -- | Game start screen.
 startingScreen :: Picture
 startingScreen = scaled 2 2 (lettering "Minesweeper") <> translated 0 (-4) (lettering "[press SPACE to start]")
+
+endScreen :: Picture
+endScreen = scaled 2 2 (lettering "All available games exceeded")

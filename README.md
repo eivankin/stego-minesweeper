@@ -10,6 +10,15 @@ stack build
 stack run
 ```
 
+## Playing
+Click on cells to open them. Hold `Ctrl` to mark them.
+
+**How to win**: you should open all cells except ones with bombs.
+
+**How to lose**: click on a cell with a bomb.
+
+**How to play again**: press `Esc`.
+
 # Description
 ## Project scope
 This project is based on [1], where researchers describe the usage of the “Minesweeper” game as the steganography tool. 

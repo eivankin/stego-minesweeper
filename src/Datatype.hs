@@ -1,5 +1,6 @@
 module Datatype where
 
+
 -- | Board cell coordinates.
 type Coords = (Int, Int)
 
@@ -46,4 +47,8 @@ data ClickMode = OpenCell | MarkCell
 -- | Board is a 2D array of cells.
 type Board = [[Cell]]
 
+-- | Usual game.
 type Game = (ClickMode, GameState, Board)
+
+-- | Sequence of games. 
+type MultiBoardGame = (ClickMode, GameState, [Board])

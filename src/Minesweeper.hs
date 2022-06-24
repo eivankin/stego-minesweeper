@@ -11,10 +11,10 @@ import System.Random
 import Utility
 
 -- | Create random board.
-createBoard :: (RandomGen g) => Double -> g -> Board
-createBoard density stdGen = minesToBoard (map makeRow (take boardHeight (randoms stdGen)))
+createBoard :: Double -> Int -> Board
+createBoard density seed = minesToBoard (map makeRow (take boardHeight (randoms (mkStdGen seed))))
   where
-    makeRow seed = map (< density) (take boardWidth (randoms (mkStdGen seed)))
+    makeRow rowSeed = map (< density) (take boardWidth (randoms (mkStdGen rowSeed)))
 
 -- | The type of an 'activityOf' function.
 type ActivityOf world =
@@ -23,14 +23,17 @@ type ActivityOf world =
   (world -> Picture) ->
   IO ()
 
--- | Make 'activityOf' resettable on Esc.
-withReset :: ActivityOf world -> ActivityOf world
-withReset activity initState handleEvent = activity initState handleEvent'
+-- | Make 'activityOf' resettable on Esc and if terminal state is reached.
+withMultipleGames :: ActivityOf MultiBoardGame -> ActivityOf MultiBoardGame
+withMultipleGames activity initialGame@(initialMode, initialGameState, _) handleEvent = activity initialGame handleEvent'
   where
-    handleEvent' event state =
+    handleEvent' event game@(_, state, boards) =
       case event of
-        KeyPress "Esc" -> initState
-        other -> handleEvent other state
+        KeyPress "Esc" ->
+          if isTerminalState state
+            then (initialMode, initialGameState, drop 1 boards)
+            else game
+        other -> handleEvent other game
 
 -- | Interaction state for 'world' with start screen.
 data WithStartScreen world
@@ -67,8 +70,19 @@ handleGame (PointerPress mouse) game@(MarkCell, state, board) =
     _ -> (MarkCell, state, markCell (pointToCoords mouse) board)
 handleGame _ game = game
 
+-- | Create a new game with StdGen.
+initialState :: StdGen -> MultiBoardGame
+initialState stdGen = (OpenCell, Start, map (createBoard 0.1) (randoms stdGen))
+
 -- | Default entry point.
 run :: IO ()
 run = do
   stdGen <- getStdGen
-  (withReset . withStartingScreen) activityOf (OpenCell, Start, createBoard 0.1 stdGen) handleGame drawGame
+  (withMultipleGames . withStartingScreen) activityOf (initialState stdGen) multiBoardHandle multiBoardDraw
+  where
+    multiBoardHandle event (mode, state, board : remainingBoards) = (newMode, newState, newBoard : remainingBoards)
+      where
+        (newMode, newState, newBoard) = handleGame event (mode, state, board)
+    multiBoardHandle _ state@(_, _, []) = state
+    multiBoardDraw (mode, state, board : _) = drawGame (mode, state, board)
+    multiBoardDraw (_, _, []) = endScreen
