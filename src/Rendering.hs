@@ -62,8 +62,9 @@ drawGame (_, state, board) =
   translated
     (- dx)
     (- dy)
-    (translated dx (2 * dy + messageMargin) (lettering (stateMessage state)) <>
-      pictures (map (drawCell state) (concat (enumerateBoard board))))
+    ( translated dx (2 * dy + messageMargin) (lettering (stateMessage state))
+        <> pictures (map (drawCell state) (concat (enumerateBoard board)))
+    )
   where
     (dx, dy) = shift
     stateMessage Win = "You won"
@@ -130,7 +131,12 @@ drawCell gameState (coords, Cell content state) =
     _ -> defaultDraw
   where
     (x, y) = fromCoords coords
-    drawIncorrectGuess = moved (drawLettering crossMark <> drawCellContent Bomb Opened <> drawCellBackground Opened baseColor)
+    drawIncorrectGuess =
+      moved
+        ( drawLettering crossMark
+            <> drawCellContent Bomb Opened
+            <> drawCellBackground Opened baseColor
+        )
     drawBombOnLose True _ = moved (drawCellContent Bomb Opened <> drawCellBackground Opened red)
     drawBombOnLose False Closed = moved (drawCellContent Bomb Opened <> drawCellBackground Opened baseColor)
     drawBombOnLose _ _ = defaultDraw

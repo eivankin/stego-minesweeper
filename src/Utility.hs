@@ -1,9 +1,9 @@
 module Utility where
 
-import Datatype
 import CodeWorld.Reflex (Point)
 import Constants
 import Data.Maybe (listToMaybe)
+import Datatype
 
 -- | Add coordinates to board cells.
 enumerateBoard :: [[a]] -> [[(Coords, a)]]

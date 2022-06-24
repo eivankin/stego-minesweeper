@@ -1,9 +1,9 @@
 module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell, checkWin) where
 
+import Constants
 import Data.Maybe
 import Datatype
 import Utility
-import Constants
 
 -- | Open closed cell at given coordinates.
 openCell :: Coords -> Board -> Board
@@ -16,19 +16,19 @@ openCell = updateCell open
 getCell :: Coords -> Board -> Maybe Cell
 getCell (x, y) board = safeGetAt x (fromMaybe [] (safeGetAt y board))
 
--- | Update board cell at given coordinates with given function. 
+-- | Update board cell at given coordinates with given function.
 updateCell :: (Cell -> Cell) -> Coords -> Board -> Board
 updateCell updater (x, y) = updateAt y (updateAt x updater)
 
 -- | Check if player won and update game state accordingly.
 checkWin :: Game -> Game
-checkWin (mode, state, board) 
+checkWin (mode, state, board)
   | not (isTerminalState state) && and (concatMap (map isBombOrOpen) board) = (mode, Win, board)
   | otherwise = (mode, state, board)
   where
     isBombOrOpen (Cell Bomb _) = True
     isBombOrOpen (Cell _ Opened) = True
-    isBombOrOpen _ = False 
+    isBombOrOpen _ = False
 
 -- | Wraps 'openCell' with game state updating and neighbors opening (if needed).
 openCellWithNeighbors :: Coords -> Game -> Game
@@ -45,7 +45,7 @@ openCellWithNeighbors (x, y) game@(mode, state, board)
     openNeighbors coords gameBoard = third $ openCellWithNeighbors coords (mode, InProcess, gameBoard)
     third (_, _, v) = v
 
--- | Converts 2D boolean array to valid board.
+-- | Convert 2D boolean array to the valid board.
 minesToBoard :: [[Bool]] -> Board
 minesToBoard board = map (map boolToCell) (enumerateBoard board)
   where
@@ -63,6 +63,7 @@ disarmBomb (x, y) = foldNeighbors (updateCell processCell (x, y)) updateCount (x
     processCell cell = cell
 
     updateCount coords currentBoard =
+      -- Update neighbor bomb count for a cell at given coordinates.
       case getCell coords currentBoard of
         Just (Cell (Neighbors _) state) ->
           updateCell
@@ -71,13 +72,18 @@ disarmBomb (x, y) = foldNeighbors (updateCell processCell (x, y)) updateCount (x
             currentBoard
         _ -> currentBoard
 
-    countNeighbors coords currentBoard = intToNeighborsCount (length (filter isBomb (getNeighbors coords currentBoard)))
-    getNeighbors coords currentBoard = getNeighborsAt coords (Cell (Neighbors Nothing) Closed) currentBoard
+    countNeighbors coords currentBoard =
+      -- Count neighbor bombs.
+      intToNeighborsCount (length (neighborBombs coords currentBoard))
+    neighborBombs coords currentBoard = filter isBomb (getNeighbors coords currentBoard) -- Get list of neighbor bombs.
+    getNeighbors coords currentBoard =
+      -- Get list of all neighbor cells.
+      getNeighborsAt coords (Cell (Neighbors Nothing) Closed) currentBoard
 
     isBomb (Cell Bomb _) = True
     isBomb _ = False
 
--- | Get list of neighbor elements in 2D array.
+-- | Get 1D list of neighbor elements in 2D array.
 getNeighborsAt :: Coords -> a -> [[a]] -> [a]
 getNeighborsAt (x, y) defaultValue board =
   concatMap

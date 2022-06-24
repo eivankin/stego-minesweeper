@@ -1,6 +1,5 @@
 module Datatype where
 
-
 -- | Board cell coordinates.
 type Coords = (Int, Int)
 
@@ -32,8 +31,8 @@ data Cell = Cell CellContent CellState
 -- 'Lose' state also stores coordinates of the last player's move.
 data GameState = Start | InProcess | Win | Lose Coords deriving (Eq)
 
--- | Check if state is terminate, e.g. cannot be changed. 
--- See GameState docs for more information about states.
+-- | Check if state is terminate, e.g. cannot be changed.
+-- See 'GameState' docs for more information about states.
 isTerminalState :: GameState -> Bool
 isTerminalState Win = True
 isTerminalState (Lose _) = True
@@ -41,7 +40,7 @@ isTerminalState _ = False
 
 -- | Game has 2 types of clicks:
 -- 1. Cell opening - player can open unmarked cells.
--- 2. Cell marking - player can change type of cell mark. 
+-- 2. Cell marking - player can change type of cell mark.
 data ClickMode = OpenCell | MarkCell
 
 -- | Board is a 2D array of cells.
@@ -50,5 +49,5 @@ type Board = [[Cell]]
 -- | Usual game.
 type Game = (ClickMode, GameState, Board)
 
--- | Sequence of games. 
+-- | Sequence of games.
 type MultiBoardGame = (ClickMode, GameState, [Board])
