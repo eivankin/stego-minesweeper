@@ -1,10 +1,10 @@
 name:                stego-minesweeper
 version:             0.1.0.0
-github:              "Github username here/stego-minesweeper"
+github:              "eivankin/stego-minesweeper"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "Author email here"
-copyright:           "2019 Author name here"
+author:              "Evgenij Ivankin"
+maintainer:          "Evgenij Ivankin"
+copyright:           "2022 Evgenij Ivankin"
 
 extra-source-files:
 - README.md
@@ -17,10 +17,18 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/Github username here/stego-minesweeper#readme>
+description:         Please see the README on GitHub at <https://github.com/eivankin/stego-minesweeper#readme>
+
+
+ghc-options:
+  - -Wall -fno-warn-type-defaults
+
 
 dependencies:
 - base >= 4.7 && < 5
+- codeworld-api
+- text
+- random
 
 library:
   source-dirs: src

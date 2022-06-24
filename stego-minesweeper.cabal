@@ -6,12 +6,12 @@ cabal-version: 1.12
 
 name:           stego-minesweeper
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/Github username here/stego-minesweeper#readme>
-homepage:       https://github.com/Github username here/stego-minesweeper#readme
-bug-reports:    https://github.com/Github username here/stego-minesweeper/issues
-author:         Author name here
-maintainer:     Author email here
-copyright:      2019 Author name here
+description:    Please see the README on GitHub at <https://github.com/eivankin/stego-minesweeper#readme>
+homepage:       https://github.com/eivankin/stego-minesweeper#readme
+bug-reports:    https://github.com/eivankin/stego-minesweeper/issues
+author:         Evgenij Ivankin
+maintainer:     Evgenij Ivankin
+copyright:      2022 Evgenij Ivankin
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,18 +21,26 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/Github username here/stego-minesweeper
+  location: https://github.com/eivankin/stego-minesweeper
 
 library
   exposed-modules:
+      Constants
       Datatype
+      Logic
       Minesweeper
+      Rendering
+      Utility
   other-modules:
       Paths_stego_minesweeper
   hs-source-dirs:
       src
+  ghc-options: -Wall -fno-warn-type-defaults
   build-depends:
       base >=4.7 && <5
+    , codeworld-api
+    , random
+    , text
   default-language: Haskell2010
 
 executable stego-minesweeper-exe
@@ -41,10 +49,13 @@ executable stego-minesweeper-exe
       Paths_stego_minesweeper
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -fno-warn-type-defaults -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , codeworld-api
+    , random
     , stego-minesweeper
+    , text
   default-language: Haskell2010
 
 test-suite stego-minesweeper-test
@@ -54,8 +65,11 @@ test-suite stego-minesweeper-test
       Paths_stego_minesweeper
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -fno-warn-type-defaults -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , codeworld-api
+    , random
     , stego-minesweeper
+    , text
   default-language: Haskell2010

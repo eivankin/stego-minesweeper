@@ -1,5 +1,8 @@
 module Datatype where
 
+-- | Board cell coordinates.
+type Coords = (Int, Int)
+
 -- | Cell has 3 states:
 -- 1. Opened state - player the cell content.
 -- 2. Closed state - player can open the cell.
@@ -16,19 +19,35 @@ intToNeighborsCount number
   | otherwise = Nothing
 
 -- | Cell content: bomb or the number of neighbor bombs (if any).
-data CellContent = Bomb | NeighborsCount
+data CellContent = Bomb | Neighbors NeighborsCount
 
 -- | Cell can be opened or closed, has some content and may have a mark.
 data Cell = Cell CellContent CellState
 
--- | Game has 3 states:
--- 1. Initial state ('Start') - timer is stopped, board is not initialized, player can make first turn.
--- 2. Process state ('InProcess') - timer is running, player can make turns.
--- 3. End state ('Win' or 'Lose') - timer is stopped, player cannot make turns.
-data GameState = Start | InProcess | Win | Lose
+-- | Game has 3 types of states:
+-- 1. Initial state ('Start') - if player clicks on bomb, it will be disarmed, e.g. player cannot lose.
+-- 2. Process state ('InProcess') - player can lose.
+-- 3. End state ('Win' or 'Lose') - player cannot make turns.
+-- 'Lose' state also stores coordinates of the last player's move.
+data GameState = Start | InProcess | Win | Lose Coords deriving (Eq)
+
+-- | Check if state is terminate, e.g. cannot be changed.
+-- See 'GameState' docs for more information about states.
+isTerminalState :: GameState -> Bool
+isTerminalState Win = True
+isTerminalState (Lose _) = True
+isTerminalState _ = False
+
+-- | Game has 2 types of clicks:
+-- 1. Cell opening - player can open unmarked cells.
+-- 2. Cell marking - player can change type of cell mark.
+data ClickMode = OpenCell | MarkCell
 
 -- | Board is a 2D array of cells.
 type Board = [[Cell]]
 
--- | Alias for tuple of game state and board.
-type Game = (GameState, Board)
+-- | Usual game.
+type Game = (ClickMode, GameState, Board)
+
+-- | Sequence of games.
+type MultiBoardGame = (ClickMode, GameState, [Board])
