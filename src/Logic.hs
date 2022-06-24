@@ -3,33 +3,38 @@ module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell, checkWi
 import Data.Maybe
 import Datatype
 import Utility
+import Constants
 
+-- | Open closed cell at given coordinates.
 openCell :: Coords -> Board -> Board
 openCell = updateCell open
   where
     open (Cell content Closed) = Cell content Opened
     open cell = cell
 
+-- | Get cell at given coordinates from given board.
 getCell :: Coords -> Board -> Maybe Cell
 getCell (x, y) board = safeGetAt x (fromMaybe [] (safeGetAt y board))
 
+-- | Update board cell at given coordinates with given function. 
 updateCell :: (Cell -> Cell) -> Coords -> Board -> Board
 updateCell updater (x, y) = updateAt y (updateAt x updater)
 
-
+-- | Check if player won and update game state accordingly.
 checkWin :: Game -> Game
 checkWin (mode, state, board) 
-  | and (concatMap (map isBombOrOpen) board) = (mode, Win, board)
+  | not (isTerminalState state) && and (concatMap (map isBombOrOpen) board) = (mode, Win, board)
   | otherwise = (mode, state, board)
   where
     isBombOrOpen (Cell Bomb _) = True
     isBombOrOpen (Cell _ Opened) = True
     isBombOrOpen _ = False 
 
+-- | Wraps 'openCell' with game state updating and neighbors opening (if needed).
 openCellWithNeighbors :: Coords -> Game -> Game
 openCellWithNeighbors (x, y) game@(mode, state, board)
   | state /= InProcess = game
-  | x >= 0 && x < width board && y >= 0 && y < height board =
+  | x >= 0 && x < boardWidth && y >= 0 && y < boardHeight =
     case getCell (x, y) board of
       Just (Cell (Neighbors Nothing) Closed) -> (mode, InProcess, neighbors board)
       Just (Cell Bomb Closed) -> (mode, Lose (x, y), openCell (x, y) board)
@@ -40,6 +45,7 @@ openCellWithNeighbors (x, y) game@(mode, state, board)
     openNeighbors coords gameBoard = third $ openCellWithNeighbors coords (mode, InProcess, gameBoard)
     third (_, _, v) = v
 
+-- | Converts 2D boolean array to valid board.
 minesToBoard :: [[Bool]] -> Board
 minesToBoard board = map (map boolToCell) (enumerateBoard board)
   where
@@ -49,6 +55,7 @@ minesToBoard board = map (map boolToCell) (enumerateBoard board)
     countNeighbors coords = intToNeighborsCount (length (filter id (getNeighbors coords)))
     getNeighbors coords = getNeighborsAt coords False board
 
+-- | Disarm bomb and given coordinates and update neighbors.
 disarmBomb :: Coords -> Board -> Board
 disarmBomb (x, y) = foldNeighbors (updateCell processCell (x, y)) updateCount (x, y)
   where
@@ -70,6 +77,7 @@ disarmBomb (x, y) = foldNeighbors (updateCell processCell (x, y)) updateCount (x
     isBomb (Cell Bomb _) = True
     isBomb _ = False
 
+-- | Get list of neighbor elements in 2D array.
 getNeighborsAt :: Coords -> a -> [[a]] -> [a]
 getNeighborsAt (x, y) defaultValue board =
   concatMap
@@ -80,6 +88,7 @@ getNeighborsAt (x, y) defaultValue board =
     )
     [max (y - 1) 0 .. y + 1]
 
+-- | Mark cell at given coordinates.
 markCell :: Coords -> Board -> Board
 markCell (x, y) = updateAt y (updateAt x processCell)
   where
@@ -88,6 +97,7 @@ markCell (x, y) = updateAt y (updateAt x processCell)
     processCell (Cell content Marked) = Cell content Closed
     processCell cell = cell
 
+-- | Apply given functions on neighbor cells.
 foldNeighbors :: (Num a1, Num a2, Enum a1, Enum a2) => (a3 -> b) -> ((a1, a2) -> b -> b) -> (a1, a2) -> a3 -> b
 foldNeighbors startFunc stepFunc (x, y) =
   foldr

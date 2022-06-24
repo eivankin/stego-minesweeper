@@ -2,8 +2,8 @@ module Utility where
 
 import Datatype
 import CodeWorld.Reflex (Point)
-import Constants (cellSize)
-import Data.Maybe (listToMaybe, fromMaybe)
+import Constants
+import Data.Maybe (listToMaybe)
 
 -- | Add coordinates to board cells.
 enumerateBoard :: [[a]] -> [[(Coords, a)]]
@@ -27,21 +27,20 @@ updateAt index f list = first ++ secondPart
 
 -- | Convert mouse position into board coordinates.
 pointToCoords :: Point -> (Int, Int)
-pointToCoords (x, y) = (round (x / cellSize), round (y / cellSize))
+pointToCoords coords = (round (x / cellSize), round (y / cellSize))
+  where
+    (x, y) = shiftPoint coords shift
 
+-- | Get i-th element of the given list or Nothing if element index is out of bounds.
 safeGetAt :: Int -> [a] -> Maybe a
 safeGetAt index list = listToMaybe (take 1 (drop index list))
 
-width :: Board -> Int 
-width board = length firstRow
+-- | Shift vector to put board in the center of the screen.
+shift :: Point
+shift = (sizeToShift boardWidth, sizeToShift boardHeight)
   where
-    firstRow = fromMaybe [] (listToMaybe (take 1 board))
+    sizeToShift s = fromIntegral s / 2 * cellSize
 
-height :: Board -> Int
-height = length
-
-getShift :: Board -> Point
-getShift board = (-fromIntegral (width board) / 2, -fromIntegral (height board) / 2)
-
+-- | Apply shift on given point.
 shiftPoint :: Point -> Point -> Point
-shiftPoint (x, y) (dx, dy) = (x - dx, y - dy)
+shiftPoint (x, y) (dx, dy) = (x + dx, y + dy)
