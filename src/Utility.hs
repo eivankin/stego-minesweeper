@@ -2,7 +2,7 @@ module Utility where
 
 import CodeWorld.Reflex (Point)
 import Constants
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, fromMaybe)
 import Datatype
 
 -- | Add coordinates to board cells.
@@ -48,3 +48,8 @@ shiftPoint (x, y) (dx, dy) = (x + dx, y + dy)
 isCoordsOnBoard :: Coords -> Bool
 isCoordsOnBoard (x, y) = x >= 0 && x < boardWidth && y >= 0 && y < boardHeight
 
+getBoards :: [[Bool]] -> ([Bool], [[Bool]])
+getBoards allBoards = (board, remainingBoards)
+  where
+    (firstBoard, remainingBoards) = splitAt 1 allBoards
+    board = fromMaybe [] (listToMaybe firstBoard)

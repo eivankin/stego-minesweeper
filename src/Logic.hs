@@ -1,13 +1,13 @@
-module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell, checkWin, anticlockwiseCoords, toBoard) where
+module Logic (openCellWithNeighbors, minesToBoard, markCell, checkWin, anticlockwiseCoords, toBoard) where
 
 import CodeWorld.Reflex (Vector, vectorSum)
+import Constants (boardWidth, boardHeight)
+import Data.List (sortOn)
+import Data.List.Split
 import Data.Maybe
 import Datatype
 import Utility
 import Prelude hiding (Left, Right)
-import Data.List.Split
-import Data.List (sortOn)
-import Constants (boardWidth)
 
 -- | Open closed cell at given coordinates.
 openCell :: Coords -> Board -> Board
@@ -26,9 +26,10 @@ updateCell updater (x, y) = updateAt y (updateAt x updater)
 
 -- | Check if player won and update game state accordingly.
 checkWin :: Game -> Game
-checkWin (mode, state, board)
-  | not (isTerminalState state) && and (concatMap (map isBombOrOpen) board) = (mode, Win, board)
-  | otherwise = (mode, state, board)
+checkWin game@(mode, state) = 
+  case state of
+    (InProcess board) -> if and (concatMap (map isBombOrOpen) board) then (mode, Win board) else game
+    _ -> game
   where
     isBombOrOpen (Cell Bomb _) = True
     isBombOrOpen (Cell _ Opened) = True
@@ -36,18 +37,22 @@ checkWin (mode, state, board)
 
 -- | Wraps 'openCell' with game state updating and neighbors opening (if needed).
 openCellWithNeighbors :: Coords -> Game -> Game
-openCellWithNeighbors currentCoords@(x, y) game@(mode, state, board)
-  | state /= InProcess = game
-  | isCoordsOnBoard currentCoords =
-    case getCell (x, y) board of
-      Just (Cell (Neighbors Nothing) Closed) -> (mode, InProcess, neighbors board)
-      Just (Cell Bomb Closed) -> (mode, Lose (x, y), openCell (x, y) board)
-      _ -> (mode, InProcess, openCell (x, y) board)
-  | otherwise = game
+openCellWithNeighbors currentCoords@(x, y) game@(mode, state) =
+  case state of
+    (InProcess board) ->
+      if isCoordsOnBoard currentCoords
+        then case getCell (x, y) board of
+          Just (Cell (Neighbors Nothing) Closed) -> (mode, InProcess (neighbors board))
+          Just (Cell Bomb Closed) -> (mode, Lose (openCell (x, y) board) (x, y))
+          _ -> (mode, InProcess (openCell (x, y) board))
+        else game
+    _ -> game
   where
     neighbors = foldNeighbors (openCell (x, y)) openNeighbors (x, y)
-    openNeighbors coords gameBoard = third $ openCellWithNeighbors coords (mode, InProcess, gameBoard)
-    third (_, _, v) = v
+    openNeighbors coords gameBoard =
+      extractBoard $
+        snd $
+          openCellWithNeighbors coords (mode, InProcess gameBoard)
 
 -- | Convert 2D boolean array to the valid board.
 minesToBoard :: RawBoard -> Board
@@ -58,34 +63,6 @@ minesToBoard board = map (map boolToCell) (enumerateBoard board)
 
     countNeighbors coords = intToNeighborsCount (length (filter id (getNeighbors coords)))
     getNeighbors coords = getNeighborsAt coords False board
-
--- | Disarm bomb and given coordinates and update neighbors.
-disarmBomb :: Coords -> Board -> Board
-disarmBomb (x, y) = foldNeighbors (updateCell processCell (x, y)) updateCount (x, y)
-  where
-    processCell (Cell Bomb Closed) = Cell (Neighbors Nothing) Closed
-    processCell cell = cell
-
-    updateCount coords currentBoard =
-      -- Update neighbor bomb count for a cell at given coordinates.
-      case getCell coords currentBoard of
-        Just (Cell (Neighbors _) state) ->
-          updateCell
-            (const (Cell (Neighbors (countNeighbors coords currentBoard)) state))
-            coords
-            currentBoard
-        _ -> currentBoard
-
-    countNeighbors coords currentBoard =
-      -- Count neighbor bombs.
-      intToNeighborsCount (length (neighborBombs coords currentBoard))
-    neighborBombs coords currentBoard = filter isBomb (getNeighbors coords currentBoard) -- Get list of neighbor bombs.
-    getNeighbors coords currentBoard =
-      -- Get list of all neighbor cells.
-      getNeighborsAt coords (Cell (Neighbors Nothing) Closed) currentBoard
-
-    isBomb (Cell Bomb _) = True
-    isBomb _ = False
 
 -- | Get 1D list of neighbor elements in 2D array.
 getNeighborsAt :: Coords -> a -> [[a]] -> [a]
@@ -133,21 +110,21 @@ nextDir initialStepCount currentDir =
     Up -> (Left, initialStepCount + 1)
 
 dirToVector :: Dir -> Vector
-dirToVector Up = (0, 1)
-dirToVector Down = (0, -1)
-dirToVector Left = (-1, 0)
-dirToVector Right = (1, 0)
+dirToVector Up = (1, 0)
+dirToVector Down = (-1, 0)
+dirToVector Left = (0, -1)
+dirToVector Right = (0, 1)
 
 move :: Dir -> Vector -> Vector
 move dir = vectorSum (dirToVector dir)
 
-anticlockwiseCoords :: Int -> Vector -> [Coords]
-anticlockwiseCoords size start =
+anticlockwiseCoords :: Vector -> [Coords]
+anticlockwiseCoords (i, j) =
   filter
     isCoordsOnBoard
     ( map
         (vectorToCoords . fst)
-        (iterate makeStep (start, (size, Left, size)))
+        (iterate makeStep (start, (startSize, Left, startSize)))
     )
   where
     makeStep (currentPos, (initialStepCount, dir, remainingSteps)) = (newPos, newInfo)
@@ -157,6 +134,9 @@ anticlockwiseCoords size start =
           | remainingSteps < 2 = let (newDir, newSteps) = nextDir initialStepCount dir in (newSteps, newDir, newSteps)
           | otherwise = (initialStepCount, dir, remainingSteps - 1)
     vectorToCoords (x, y) = (round x, round y)
+    startSize = 1
+    start = (j, i)
 
-toBoard :: [(Coords, Bool)] -> RawBoard
-toBoard = chunksOf boardWidth . map snd . sortOn fst
+toBoard :: [(Coords, a)] -> [[a]]
+toBoard = chunksOf boardWidth . map snd . sortOn fst . take (boardWidth * boardHeight)
+
