@@ -44,3 +44,7 @@ shift = (sizeToShift boardWidth, sizeToShift boardHeight)
 -- | Apply shift on given point.
 shiftPoint :: Point -> Point -> Point
 shiftPoint (x, y) (dx, dy) = (x + dx, y + dy)
+
+isCoordsOnBoard :: Coords -> Bool
+isCoordsOnBoard (x, y) = x >= 0 && x < boardWidth && y >= 0 && y < boardHeight
+

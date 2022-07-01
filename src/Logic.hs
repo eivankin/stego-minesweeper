@@ -1,9 +1,13 @@
-module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell, checkWin) where
+module Logic (openCellWithNeighbors, minesToBoard, disarmBomb, markCell, checkWin, anticlockwiseCoords, toBoard) where
 
-import Constants
+import CodeWorld.Reflex (Vector, vectorSum)
 import Data.Maybe
 import Datatype
 import Utility
+import Prelude hiding (Left, Right)
+import Data.List.Split
+import Data.List (sortOn)
+import Constants (boardWidth)
 
 -- | Open closed cell at given coordinates.
 openCell :: Coords -> Board -> Board
@@ -32,9 +36,9 @@ checkWin (mode, state, board)
 
 -- | Wraps 'openCell' with game state updating and neighbors opening (if needed).
 openCellWithNeighbors :: Coords -> Game -> Game
-openCellWithNeighbors (x, y) game@(mode, state, board)
+openCellWithNeighbors currentCoords@(x, y) game@(mode, state, board)
   | state /= InProcess = game
-  | x >= 0 && x < boardWidth && y >= 0 && y < boardHeight =
+  | isCoordsOnBoard currentCoords =
     case getCell (x, y) board of
       Just (Cell (Neighbors Nothing) Closed) -> (mode, InProcess, neighbors board)
       Just (Cell Bomb Closed) -> (mode, Lose (x, y), openCell (x, y) board)
@@ -117,3 +121,42 @@ foldNeighbors startFunc stepFunc (x, y) =
         )
         [y - 1 .. y + 1]
     )
+
+data Dir = Up | Down | Left | Right
+
+nextDir :: Int -> Dir -> (Dir, Int)
+nextDir initialStepCount currentDir =
+  case currentDir of
+    Left -> (Down, initialStepCount)
+    Down -> (Right, initialStepCount + 1)
+    Right -> (Up, initialStepCount)
+    Up -> (Left, initialStepCount + 1)
+
+dirToVector :: Dir -> Vector
+dirToVector Up = (0, 1)
+dirToVector Down = (0, -1)
+dirToVector Left = (-1, 0)
+dirToVector Right = (1, 0)
+
+move :: Dir -> Vector -> Vector
+move dir = vectorSum (dirToVector dir)
+
+anticlockwiseCoords :: Int -> Vector -> [Coords]
+anticlockwiseCoords size start =
+  filter
+    isCoordsOnBoard
+    ( map
+        (vectorToCoords . fst)
+        (iterate makeStep (start, (size, Left, size)))
+    )
+  where
+    makeStep (currentPos, (initialStepCount, dir, remainingSteps)) = (newPos, newInfo)
+      where
+        newPos = move dir currentPos
+        newInfo
+          | remainingSteps < 2 = let (newDir, newSteps) = nextDir initialStepCount dir in (newSteps, newDir, newSteps)
+          | otherwise = (initialStepCount, dir, remainingSteps - 1)
+    vectorToCoords (x, y) = (round x, round y)
+
+toBoard :: [(Coords, Bool)] -> RawBoard
+toBoard = chunksOf boardWidth . map snd . sortOn fst

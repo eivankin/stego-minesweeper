@@ -10,10 +10,10 @@ encodeMessage stdGen message = takeGroups binaryMessage
     binaryMessage = toBinary message
 
     processGroup :: Bool -> [Bool] -> [Bool]
-    processGroup isLast group =
+    processGroup isLast group = take boardSize (
       completeWithFalses
         boardSize
-        (concat [[startingBit, continueBit], remainingMinesIndicator, group, remainingMines, [endingBit]])
+        (concat [[startingBit, continueBit], remainingMinesIndicator, group, remainingMines, [endingBit]]))
       where
         boardSize = boardWidth * boardHeight
         startingBit = False

@@ -30,6 +30,7 @@ library
       Logic
       MessageDecoding
       MessageEncoding
+      MessageUtils
       Minesweeper
       Rendering
       Utility
