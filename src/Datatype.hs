@@ -46,6 +46,9 @@ data ClickMode = OpenCell | MarkCell
 -- | Board is a 2D array of cells.
 type Board = [[Cell]]
 
+-- | Raw board is a 2D array of boolean that indicates whether there is a bomb in the cell.
+type RawBoard = [[Bool]]
+
 -- | Usual game.
 type Game = (ClickMode, GameState, Board)
 

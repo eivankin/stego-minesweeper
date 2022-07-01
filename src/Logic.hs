@@ -46,7 +46,7 @@ openCellWithNeighbors (x, y) game@(mode, state, board)
     third (_, _, v) = v
 
 -- | Convert 2D boolean array to the valid board.
-minesToBoard :: [[Bool]] -> Board
+minesToBoard :: RawBoard -> Board
 minesToBoard board = map (map boolToCell) (enumerateBoard board)
   where
     boolToCell (_, True) = Cell Bomb Closed
