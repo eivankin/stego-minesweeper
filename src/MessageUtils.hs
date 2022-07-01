@@ -1,8 +1,10 @@
+{-# OPTIONS_GHC -Wall -fno-warn-type-defaults #-}
 module MessageUtils where
 
   
 import Constants
 import Data.Char
+import Data.Maybe (listToMaybe)
 
 falses :: Int -> [Bool]
 falses count = map (const False) [0 .. count]

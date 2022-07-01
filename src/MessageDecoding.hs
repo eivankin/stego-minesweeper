@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wall -fno-warn-type-defaults #-}
-
 module MessageDecoding where
 
 import Constants
@@ -19,7 +17,12 @@ decodeMessage boards =
         )
     )
   where
-    (boardsExceptLast, lastBoard : _) = span isNotLast boards
+    (boardsExceptLast, lastBoards) = span isNotLast boards
+    lastBoard = 
+      case lastBoards of
+        [board] -> board
+        _ -> error "Input is invalid: last board not found"
+    
     isNotLast (_ : s : _) = s
     isNotLast _ = False
     
