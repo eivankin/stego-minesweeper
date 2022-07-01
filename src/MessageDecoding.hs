@@ -5,8 +5,7 @@ module MessageDecoding where
 import Constants
 import Data.Char
 import Data.List.Split
-import Data.Maybe (listToMaybe)
-import MessageEncoding (completeWithFalses, onesCount, spanOnes)
+import MessageUtils
 
 decodeMessage :: [[Bool]] -> String
 decodeMessage boards =
@@ -40,9 +39,3 @@ decodeMessage boards =
     remainingMinesIndicator = take indicatorLen (drop 2 lastBoard)
     skipFromEnd = binToInt remainingMinesIndicator - onesCount remainingMinesIndicator + 1
     processedLast = reverse (snd (spanOnes skipFromEnd (reverse (drop (2 + indicatorLen) lastBoard))))
-
-binToInt :: [Bool] -> Int
-binToInt list = sum (zipWith (\b p -> if b then 2 ^ p else 0) (reverse list) [0 ..])
-
-takeLast :: [a] -> Maybe a
-takeLast list = listToMaybe (take 1 (reverse list))
