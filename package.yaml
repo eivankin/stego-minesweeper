@@ -30,6 +30,7 @@ dependencies:
 - text
 - random
 - split
+- optparse-applicative
 
 library:
   source-dirs: src

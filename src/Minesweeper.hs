@@ -3,9 +3,12 @@
 module Minesweeper (run) where
 
 import CodeWorld
+import Data.List.Split
 import Datatype
 import Logic
+import MessageDecoding
 import MessageEncoding
+import Options.Applicative
 import Rendering
 import System.Random
 import Utility
@@ -85,12 +88,43 @@ initialState stdGen message = (OpenCell, Start board, boards)
   where
     (board, boards) = getBoards (encodeMessage stdGen message)
 
--- | Default entry point.
-run :: IO ()
-run = do
+data Options = Options String Bool String
+
+optionsParser :: Parser Options
+optionsParser =
+  Options
+    <$> strOption
+      ( long "input"
+          <> metavar "MSG"
+          <> help "Message to hide inside the minesweeper game or binary stringv (of '1', '0' and separators) to be decoded"
+      )
+      <*> switch
+        ( long "decode"
+            <> short 'd'
+            <> help "Whether to decode input"
+        )
+      <*> option
+        auto
+        ( long "separator"
+            <> short 's'
+            <> metavar "SEP"
+            <> help "Delemiter to split binary string by"
+            <> value ","
+        )
+
+program :: Options -> IO ()
+program (Options msg False _) = do
   stdGen <- getStdGen
-  let inputMessage = "A"
-  (withMultipleGames . withStartingScreen) activityOf (initialState stdGen inputMessage) multiBoardHandle multiBoardDraw
+  playGame stdGen msg
+program (Options binaryString True sep) = putStrLn (decodeMessage (map (map (== '1')) (splitOn sep binaryString)))
+
+playGame :: StdGen -> String -> IO ()
+playGame stdGen msg =
+  (withMultipleGames . withStartingScreen)
+    activityOf
+    (initialState stdGen msg)
+    multiBoardHandle
+    multiBoardDraw
   where
     -- Wrap 'handleGame' to make it works with 'MultiBoardGame' instead of 'Game'.
     multiBoardHandle event (mode, state, boards) = (newMode, newState, boards)
@@ -99,3 +133,15 @@ run = do
     -- Wrap 'drawGame' to make it works with 'MultiBoardGame' instead of 'Game'.
     multiBoardDraw (_, Start [], []) = endScreen
     multiBoardDraw (mode, state, _) = drawGame (mode, state)
+
+-- | Default entry point.
+run :: IO ()
+run = program =<< execParser opts
+  where
+    opts =
+      info
+        (optionsParser <**> helper)
+        ( fullDesc
+            <> progDesc "Play a game with hidden message or decode the retrieved binary data."
+            <> header "Minesweeper game-based steganography scheme"
+        )

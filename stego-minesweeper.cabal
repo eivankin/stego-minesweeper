@@ -42,6 +42,7 @@ library
   build-depends:
       base >=4.7 && <5
     , codeworld-api
+    , optparse-applicative
     , random
     , split
     , text
@@ -57,6 +58,7 @@ executable stego-minesweeper-exe
   build-depends:
       base >=4.7 && <5
     , codeworld-api
+    , optparse-applicative
     , random
     , split
     , stego-minesweeper
@@ -75,6 +77,7 @@ test-suite doctests
     , base
     , codeworld-api
     , doctest
+    , optparse-applicative
     , random
     , split
     , template-haskell
@@ -96,6 +99,7 @@ test-suite spec
       base >=4.7 && <5
     , codeworld-api
     , hspec
+    , optparse-applicative
     , random
     , split
     , stego-minesweeper
