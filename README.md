@@ -1,4 +1,6 @@
 # Stego-Minesweeper
+![Starting screen](images/starting-screen.png)
+![Finished game](images/lose.png)
 This is an implementation of a minesweeper game-based steganography scheme, 
 where some secret message is hidden inside the playable minesweeper game.
 
