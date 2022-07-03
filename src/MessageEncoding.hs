@@ -1,19 +1,24 @@
 module MessageEncoding (encodeMessage) where
 
 import Constants
-import System.Random
 import MessageUtils
+import System.Random
 
+-- | Encode given message (ASCII string) as a sequence of minesweeper boards.
+-- StdGen is used to generate random bits at the end of the last board (if needed).
 encodeMessage :: StdGen -> String -> [[Bool]]
 encodeMessage stdGen message = takeGroups binaryMessage
   where
     binaryMessage = toBinary message
 
     processGroup :: Bool -> [Bool] -> [Bool]
-    processGroup isLast group = take boardSize (
-      completeWithFalses
+    processGroup isLast group =
+      take
         boardSize
-        (concat [[startingBit, continueBit], remainingMinesIndicator, group, remainingMines, [endingBit]]))
+        ( completeWithFalses
+            boardSize
+            (concat [[startingBit, continueBit], remainingMinesIndicator, group, remainingMines, [endingBit]])
+        )
       where
         boardSize = boardWidth * boardHeight
         startingBit = False

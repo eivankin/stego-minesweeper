@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wall -fno-warn-type-defaults #-}
+
 module Constants where
 
 -- | Cell height and width for rendering purposes.
@@ -17,8 +18,10 @@ boardWidth = 9
 boardHeight :: Int
 boardHeight = 9
 
+-- | Number of mines on board, used to encode message as an sequence of valid boards.
 numberOfMines :: Int
 numberOfMines = 9
-  
+
+-- | Number of bits to store the number of missing mines on the last board
 indicatorLen :: Int
 indicatorLen = ceiling (logBase 2 (fromIntegral numberOfMines))

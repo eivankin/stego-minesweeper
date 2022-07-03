@@ -2,7 +2,7 @@ module Utility where
 
 import CodeWorld.Reflex (Point)
 import Constants
-import Data.Maybe (listToMaybe, fromMaybe)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Datatype
 
 -- | Add coordinates to board cells.

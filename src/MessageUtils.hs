@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-type-defaults #-}
+
 module MessageUtils where
 
-  
 import Constants
 import Data.Char
 import Data.Maybe (listToMaybe)
@@ -30,10 +30,8 @@ binToInt list = sum (zipWith (\b p -> if b then 2 ^ p else 0) (reverse list) [0 
 takeLast :: [a] -> Maybe a
 takeLast list = listToMaybe (take 1 (reverse list))
 
-
 completeWithFalses :: Int -> [Bool] -> [Bool]
 completeWithFalses targetLen list = list ++ falses (targetLen - length list)
 
 remainingMinesCount :: [Bool] -> Int
 remainingMinesCount board = numberOfMines - 1 - onesCount board
-

@@ -1,7 +1,8 @@
 module Datatype where
 
-import Constants ( boardWidth, boardHeight)
-
+import CodeWorld.Reflex (Vector, vectorSum)
+import Constants (boardHeight, boardWidth)
+import Prelude hiding (Left, Right)
 
 -- | Board cell coordinates.
 type Coords = (Int, Int)
@@ -49,9 +50,11 @@ data ClickMode = OpenCell | MarkCell deriving (Show)
 -- | Board is a 2D array of cells.
 type Board = [[Cell]]
 
+-- | Board made of empty cells to draw on 'Start' stage.
 emptyBoard :: Board
 emptyBoard = replicate boardHeight (replicate boardWidth (Cell (Neighbors Nothing) Closed))
 
+-- | Extract board to draw from current game state.
 extractBoard :: GameState -> Board
 extractBoard (InProcess board) = board
 extractBoard (Win board) = board
@@ -66,3 +69,17 @@ type Game = (ClickMode, GameState)
 
 -- | Sequence of games.
 type MultiBoardGame = (ClickMode, GameState, [[Bool]])
+
+-- | Direction to move for generating coordinates.
+data Dir = Up | Down | Left | Right
+
+-- | Convert direction to move vector.
+dirToVector :: Dir -> Vector
+dirToVector Up = (1, 0)
+dirToVector Down = (-1, 0)
+dirToVector Left = (0, -1)
+dirToVector Right = (0, 1)
+
+-- | Move from given position to given direction.
+move :: Dir -> Vector -> Vector
+move dir = vectorSum (dirToVector dir)

@@ -1,7 +1,7 @@
 module Logic (openCellWithNeighbors, minesToBoard, markCell, checkWin, anticlockwiseCoords, toBoard) where
 
-import CodeWorld.Reflex (Vector, vectorSum)
-import Constants (boardWidth, boardHeight)
+import CodeWorld.Reflex (Vector)
+import Constants (boardHeight, boardWidth)
 import Data.List (sortOn)
 import Data.List.Split
 import Data.Maybe
@@ -26,7 +26,7 @@ updateCell updater (x, y) = updateAt y (updateAt x updater)
 
 -- | Check if player won and update game state accordingly.
 checkWin :: Game -> Game
-checkWin game@(mode, state) = 
+checkWin game@(mode, state) =
   case state of
     (InProcess board) -> if and (concatMap (map isBombOrOpen) board) then (mode, Win board) else game
     _ -> game
@@ -99,8 +99,7 @@ foldNeighbors startFunc stepFunc (x, y) =
         [y - 1 .. y + 1]
     )
 
-data Dir = Up | Down | Left | Right
-
+-- | Get next direction (make  turn) and number of steps to move anticlockwise.
 nextDir :: Int -> Dir -> (Dir, Int)
 nextDir initialStepCount currentDir =
   case currentDir of
@@ -109,15 +108,7 @@ nextDir initialStepCount currentDir =
     Right -> (Up, initialStepCount)
     Up -> (Left, initialStepCount + 1)
 
-dirToVector :: Dir -> Vector
-dirToVector Up = (1, 0)
-dirToVector Down = (-1, 0)
-dirToVector Left = (0, -1)
-dirToVector Right = (0, 1)
-
-move :: Dir -> Vector -> Vector
-move dir = vectorSum (dirToVector dir)
-
+-- | Generate spiral anticlockwise sequence of coordinates starting lying on board from given point.
 anticlockwiseCoords :: Vector -> [Coords]
 anticlockwiseCoords (i, j) =
   filter
@@ -137,6 +128,6 @@ anticlockwiseCoords (i, j) =
     startSize = 1
     start = (j, i)
 
+-- | Convert 1D raw board with enumerated cells to an actual 2D board.
 toBoard :: [(Coords, a)] -> [[a]]
 toBoard = chunksOf boardWidth . map snd . sortOn fst . take (boardWidth * boardHeight)
-
