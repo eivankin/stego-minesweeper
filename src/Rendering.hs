@@ -58,7 +58,7 @@ glareColor = white
 
 -- | Draw game of given state.
 drawGame :: Game -> Picture
-drawGame (_, state, board) =
+drawGame (_, state) =
   translated
     (- dx)
     (- dy)
@@ -67,10 +67,11 @@ drawGame (_, state, board) =
     )
   where
     (dx, dy) = shift
-    stateMessage Win = "You won"
-    stateMessage (Lose _) = "You lose"
+    stateMessage (Win _) = "You won"
+    stateMessage (Lose _ _) = "You lose"
     stateMessage _ = ""
     messageMargin = 0.5
+    board = extractBoard state
 
 -- | Draw button at given coordinates and state (pressed or not).
 drawButton :: (Double, Double) -> Bool -> Picture
@@ -121,13 +122,13 @@ drawLettering text = translated 0 (- cellPadding / 2) (scaled scaleFactor scaleF
 drawCell :: GameState -> (Coords, Cell) -> Picture
 drawCell gameState (coords, Cell content state) =
   case gameState of
-    (Lose lastMove) ->
+    (Lose _ lastMove) ->
       case (content, state) of
         (Bomb, _) -> drawBombOnLose (lastMove == coords) state
         (_, Flagged) -> drawIncorrectGuess
         (_, Marked) -> drawIncorrectGuess
         _ -> defaultDraw
-    Win -> drawCellOnWin
+    Win _ -> drawCellOnWin
     _ -> defaultDraw
   where
     (x, y) = fromCoords coords
@@ -161,5 +162,6 @@ drawCell gameState (coords, Cell content state) =
 startingScreen :: Picture
 startingScreen = scaled 2 2 (lettering "Minesweeper") <> translated 0 (-4) (lettering "[press SPACE to start]")
 
+-- | Game end screen to inform player about the end of games sequence.
 endScreen :: Picture
 endScreen = scaled 2 2 (lettering "All available games exceeded")
