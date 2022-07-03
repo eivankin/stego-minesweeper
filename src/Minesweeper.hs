@@ -88,8 +88,10 @@ initialState stdGen message = (OpenCell, Start board, boards)
   where
     (board, boards) = getBoards (encodeMessage stdGen message)
 
+-- | CLI options representation.
 data Options = Options String Bool String
 
+-- | Parse CLI options.
 optionsParser :: Parser Options
 optionsParser =
   Options
@@ -112,12 +114,14 @@ optionsParser =
             <> value ","
         )
 
+-- | Start a game or decode the given message depends on a given CLI options.
 program :: Options -> IO ()
 program (Options msg False _) = do
   stdGen <- getStdGen
   playGame stdGen msg
 program (Options binaryString True sep) = putStrLn (decodeMessage (map (map (== '1')) (splitOn sep binaryString)))
 
+-- | Start a new game with given 'StdGen' and a message to hide.
 playGame :: StdGen -> String -> IO ()
 playGame stdGen msg =
   (withMultipleGames . withStartingScreen)

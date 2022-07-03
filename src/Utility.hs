@@ -45,9 +45,11 @@ shift = (sizeToShift boardWidth, sizeToShift boardHeight)
 shiftPoint :: Point -> Point -> Point
 shiftPoint (x, y) (dx, dy) = (x + dx, y + dy)
 
+-- | Check if given coordinates lies on a board.
 isCoordsOnBoard :: Coords -> Bool
 isCoordsOnBoard (x, y) = x >= 0 && x < boardWidth && y >= 0 && y < boardHeight
 
+-- | Get the first board and remaining ones from list of all boards. 
 getBoards :: [[Bool]] -> ([Bool], [[Bool]])
 getBoards allBoards = (board, remainingBoards)
   where
